@@ -6,6 +6,7 @@ using namespace RSHMUS001;
 VolImage::VolImage(){
     width = 0;
     height = 0;
+
 }
 
 VolImage::~VolImage(){
@@ -13,6 +14,8 @@ VolImage::~VolImage(){
 }
 
 bool VolImage::readImages(string baseName){
+
+    //getting filepath of .dat file
     string folderName = "brain_mri_raws.tar";
     string fileName = folderName + "/" + baseName + ".dat";
     ifstream dataFile (fileName.c_str());
@@ -21,7 +24,7 @@ bool VolImage::readImages(string baseName){
         cerr << "File open failed!" << endl;
     }
 
-    vector<int> data_vec;
+    vector<int> data_vec; //vector to hold specs: width, height, number of slices
     string imgData;
 
     while (dataFile.eof()){
@@ -41,4 +44,30 @@ bool VolImage::readImages(string baseName){
         noOfImages = data_vec[2];
 
     }
+    dataFile.close();
+
+    //store the contents of each .raw file into 2D array
+    unsigned char** slice;
+    string file_raw = "";
+
+    for(int i=0; i<noOfImages; i++){
+        stringstream ss;
+        ss << i;
+        file_raw = baseName + ss,str() + ".raw";
+
+        ifstream raw(file_raw.c_str(), ios::binary);
+
+        slice = new unsigned char*[height]; //row
+
+        for(int j=0; j<height; j++){
+            slice[j] = new unsigned char[width]; //columns
+            raw.read((char*)slice[j], width);
+            
+        }
+        raw.close();
+    }
+
+    slices.push_back(slice);
+
+    return true;
 }
