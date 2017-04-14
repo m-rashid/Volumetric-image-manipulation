@@ -108,6 +108,18 @@ namespace RSHMUS001{
       of.close();
   }
 
+  void VolImage::sliceThrough (int rowId, output_prefix){
+      string output = output_prefix + ".raw";
+      ofstream of(output.c_str(), ios::binary);
+
+      while (!of.eof()){
+        for (int i = 0; i < slices.size(); i++){
+            of.write ((char*)slices[i][rowId])
+        }
+      }
+      output.close();
+  }
+
   int VolImage::volImageSize(void){
 
       //rows * pointers to each element in the row
