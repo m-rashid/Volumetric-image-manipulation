@@ -53,7 +53,7 @@ bool VolImage::readImages(string baseName){
     for(int i=0; i<noOfImages; i++){
         stringstream ss;
         ss << i;
-        file_raw = baseName + ss,str() + ".raw";
+        file_raw = baseName + ss.str() + ".raw";
 
         ifstream raw(file_raw.c_str(), ios::binary);
 
@@ -62,7 +62,7 @@ bool VolImage::readImages(string baseName){
         for(int j=0; j<height; j++){
             slice[j] = new unsigned char[width]; //columns
             raw.read((char*)slice[j], width);
-            
+
         }
         raw.close();
     }
@@ -70,4 +70,30 @@ bool VolImage::readImages(string baseName){
     slices.push_back(slice);
 
     return true;
+}
+
+void diffmap (int sliceI, int sliceJ, string output_prefix){
+    string diff_map = output_prefix + ".raw";
+    ofstream of(diff_map.c_str(), ios::binary);
+
+    //array to hold the diff maps
+    unsigned char** temp_arr = new unsigned char* [height];
+
+    for (int r = 0; r < height; r++){
+        temp_arr[r] = new unsigned char[width];
+        for (int c = 0; c < width; c++){
+            temp_arr[r][c] = (unsigned char)(fabs((float)slices[sliceI][r][c] - (float)slices[sliceJ][r][c])/2);
+        }
+        of.write((char*)temp_arr[r], width);
+    }
+
+    of.close();
+}
+void extract (int sliceId, string output_prefix){
+    string extract = output_prefix + ".raw";
+    ofstream of(extract.c_str());
+    for(int r = 0; r < height; r++){
+        of.write((char*)slices[sliceId][r], width);
+    }
+    of.close();
 }
