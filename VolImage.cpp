@@ -8,103 +8,105 @@
 #include <cmath>
 
 using namespace std;
-using namespace RSHMUS001;
 
-VolImage::VolImage(){
-    width = 0;
-    height = 0;
+namespace RSHMUS001{
 
-}
+  VolImage::VolImage(){
+      width = 0;
+      height = 0;
 
-VolImage::~VolImage(){
+  }
 
-}
+  VolImage::~VolImage(){
 
-bool VolImage::readImages(string baseName){
+  }
 
-    //getting filepath of .dat file
-    string folderName = "brain_mri_raws.tar";
-    string fileName = folderName + "/" + baseName + ".dat";
-    ifstream dataFile (fileName.c_str());
-    int noOfImages;
-    if (!dataFile){
-        cerr << "File open failed!" << endl;
-    }
+  bool VolImage::readImages(string baseName){
 
-    vector<int> data_vec; //vector to hold specs: width, height, number of slices
-    string imgData;
+      //getting filepath of .dat file
+      string folderName = "brain_mri_raws.tar";
+      string fileName = folderName + "/" + baseName + ".dat";
+      ifstream dataFile (fileName.c_str());
+      int noOfImages;
+      if (!dataFile){
+          cerr << "File open failed!" << endl;
+      }
 
-    while (dataFile.eof()){
+      vector<int> data_vec; //vector to hold specs: width, height, number of slices
+      string imgData;
 
-        for (imgData ; getline(dataFile, imgData);){
-            istringstream str (imgData);
-            while (str){
-                string split;
-                str >> split;
-                data_vec.push_back(std::stoi(split));
-                split = ;
-            }
-        }
+      while (dataFile.eof()){
 
-        width = data_vec[0];
-        height = data_vec[1];
-        noOfImages = data_vec[2];
+          for (imgData ; getline(dataFile, imgData);){
+              istringstream str (imgData);
+              while (str){
+                  string split;
+                  str >> split;
+                  data_vec.push_back(std::stoi(split));
+                  split = "";
+              }
+          }
 
-    }
-    dataFile.close();
+          width = data_vec[0];
+          height = data_vec[1];
+          noOfImages = data_vec[2];
 
-    //store the contents of each .raw file into 2D array
-    unsigned char** slice;
-    string file_raw = "";
+      }
+      dataFile.close();
 
-    for(int i=0; i<noOfImages; i++){
-        stringstream ss;
-        ss << i;
-        file_raw = baseName + ss.str() + ".raw";
+      //store the contents of each .raw file into 2D array
+      unsigned char** slice;
+      string file_raw = "";
 
-        ifstream raw(file_raw.c_str(), ios::binary);
+      for(int i=0; i<noOfImages; i++){
+          stringstream ss;
+          ss << i;
+          file_raw = baseName + ss.str() + ".raw";
 
-        slice = new unsigned char*[height]; //row
+          ifstream raw(file_raw.c_str(), ios::binary);
 
-        for(int j=0; j<height; j++){
-            slice[j] = new unsigned char[width]; //columns
-            raw.read((char*)slice[j], width);
+          slice = new unsigned char*[height]; //row
 
-        }
-        raw.close();
-    }
+          for(int j=0; j<height; j++){
+              slice[j] = new unsigned char[width]; //columns
+              raw.read((char*)slice[j], width);
 
-    slices.push_back(slice);
+          }
+          raw.close();
+      }
 
-    return true;
-}
+      slices.push_back(slice);
 
-void VolImage::diffmap (int sliceI, int sliceJ, string output_prefix){
-    string diff_map = output_prefix + ".raw";
-    ofstream of(diff_map.c_str(), ios::binary);
+      return true;
+  }
 
-    //array to hold the diff maps
-    unsigned char** temp_arr = new unsigned char* [height];
+  void VolImage::diffmap (int sliceI, int sliceJ, string output_prefix){
+      string diff_map = output_prefix + ".raw";
+      ofstream of(diff_map.c_str(), ios::binary);
 
-    for (int r = 0; r < height; r++){
-        temp_arr[r] = new unsigned char[width];
-        for (int c = 0; c < width; c++){
-            temp_arr[r][c] = (unsigned char)(fabs((float)slices[sliceI][r][c] - (float)slices[sliceJ][r][c])/2);
-        }
-        of.write((char*)temp_arr[r], width);
-    }
+      //array to hold the diff maps
+      unsigned char** temp_arr = new unsigned char* [height];
 
-    of.close();
-}
-void VolImage::extract (int sliceId, string output_prefix){
-    string extract = output_prefix + ".raw";
-    ofstream of(extract.c_str(), ios::binary);
-    for(int r = 0; r < height; r++){
-        of.write((char*)slices[sliceId][r], width);
-    }
-    of.close();
-}
+      for (int r = 0; r < height; r++){
+          temp_arr[r] = new unsigned char[width];
+          for (int c = 0; c < width; c++){
+              temp_arr[r][c] = (unsigned char)(fabs((float)slices[sliceI][r][c] - (float)slices[sliceJ][r][c])/2);
+          }
+          of.write((char*)temp_arr[r], width);
+      }
 
-int VolImage::volImageSize(void){
-    return width * height * (slices.size()) * sizeof(char);
+      of.close();
+  }
+  void VolImage::extract (int sliceId, string output_prefix){
+      string extract = output_prefix + ".raw";
+      ofstream of(extract.c_str(), ios::binary);
+      for(int r = 0; r < height; r++){
+          of.write((char*)slices[sliceId][r], width);
+      }
+      of.close();
+  }
+
+  int VolImage::volImageSize(void){
+      return width * height * (slices.size()) * sizeof(char);
+  }
 }
