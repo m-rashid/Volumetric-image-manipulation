@@ -1,4 +1,11 @@
 #include "VolImage.h"
+#include <string>
+#include <vector>
+#include <fstream>
+#include <iostream>
+#include <ios>
+#include <sstream>
+#include <cmath>
 
 using namespace std;
 using namespace RSHMUS001;
@@ -34,8 +41,8 @@ bool VolImage::readImages(string baseName){
             while (str){
                 string split;
                 str >> split;
-                data_vec.push_back(split);
-                split = "";
+                data_vec.push_back(std::stoi(split));
+                split = ;
             }
         }
 
@@ -72,7 +79,7 @@ bool VolImage::readImages(string baseName){
     return true;
 }
 
-void diffmap (int sliceI, int sliceJ, string output_prefix){
+void VolImage::diffmap (int sliceI, int sliceJ, string output_prefix){
     string diff_map = output_prefix + ".raw";
     ofstream of(diff_map.c_str(), ios::binary);
 
@@ -89,11 +96,15 @@ void diffmap (int sliceI, int sliceJ, string output_prefix){
 
     of.close();
 }
-void extract (int sliceId, string output_prefix){
+void VolImage::extract (int sliceId, string output_prefix){
     string extract = output_prefix + ".raw";
-    ofstream of(extract.c_str());
+    ofstream of(extract.c_str(), ios::binary);
     for(int r = 0; r < height; r++){
         of.write((char*)slices[sliceId][r], width);
     }
     of.close();
+}
+
+int VolImage::volImageSize(void){
+    return width * height * (slices.size()) * sizeof(char);
 }
