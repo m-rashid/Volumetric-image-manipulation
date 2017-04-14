@@ -24,9 +24,9 @@ namespace RSHMUS001{
   bool VolImage::readImages(string baseName){
 
       //getting filepath of .dat file
-      string folderName = "brain_mri_raws.tar";
-      string fileName = folderName + "/" + baseName + ".dat";
-      ifstream dataFile (fileName.c_str());
+      string folderName = "brain_mri_raws";
+      string fileName = folderName + "/" + baseName + ".data";
+      ifstream dataFile (fileName.c_str(), ios::binary);
       int noOfImages;
       if (!dataFile){
           cerr << "File open failed!" << endl;
@@ -35,22 +35,22 @@ namespace RSHMUS001{
       vector<int> data_vec; //vector to hold specs: width, height, number of slices
       string imgData;
 
-      while (dataFile.eof()){
+      while (!dataFile.eof()){
+
 
           for (imgData ; getline(dataFile, imgData);){
               istringstream str (imgData);
               while (str){
-                  string split;
+                  int split;
                   str >> split;
-                  data_vec.push_back(std::stoi(split));
-                  split = "";
+                  data_vec.push_back(split);
               }
           }
 
           width = data_vec[0];
           height = data_vec[1];
           noOfImages = data_vec[2];
-
+          cout << width << " " << height << " " << noOfImages << endl;
       }
       dataFile.close();
 
@@ -61,7 +61,7 @@ namespace RSHMUS001{
       for(int i=0; i<noOfImages; i++){
           stringstream ss;
           ss << i;
-          file_raw = baseName + ss.str() + ".raw";
+          file_raw = "brain_mri_raws/"+baseName + ss.str() + ".raw";
 
           ifstream raw(file_raw.c_str(), ios::binary);
 
@@ -70,12 +70,12 @@ namespace RSHMUS001{
           for(int j=0; j<height; j++){
               slice[j] = new unsigned char[width]; //columns
               raw.read((char*)slice[j], width);
+              cout << *slice[j];
 
           }
           raw.close();
+          slices.push_back(slice);
       }
-
-      slices.push_back(slice);
 
       return true;
   }
@@ -100,13 +100,22 @@ namespace RSHMUS001{
   void VolImage::extract (int sliceId, string output_prefix){
       string extract = output_prefix + ".raw";
       ofstream of(extract.c_str(), ios::binary);
+
       for(int r = 0; r < height; r++){
           of.write((char*)slices[sliceId][r], width);
       }
+
       of.close();
   }
 
   int VolImage::volImageSize(void){
-      return width * height * (slices.size()) * sizeof(char);
+
+      //rows * pointers to each element in the row
+      return height * slices.size() * (sizeof(unsigned char **) + width);
+
+  }
+
+  int VolImage::volImageNum(void){
+      return slices.size();
   }
 }
