@@ -3,7 +3,7 @@ Volumetric Image Manipulation tool to load a 'stack' of 2D MRI images and manipu
   
 GETTING STARTED  
   
-After unpacking the tarball, you will find the following files:  
+Project files:    
   
 VolImage.h     -  Header file containing the structure for VolImage class  
 VolImage.cpp   -  Defintions for the methods declared in the header file  
