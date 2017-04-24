@@ -47,7 +47,7 @@ NOTES
   
 2. The python convenience utility, viewer.py, can be used to view RAW files  
    via the command line. This can be invoked in the following way:  
-   python viewer.py <raw filename> <width> <height>  
+   python viewer.py \<raw filename\> \<width\> \<height\>  
    The width and height for the RAW image is displayed in the .data header file  
    placed in the MRI sequence folder, and available with every output RAW file.  
    Header file format: <width> <height> <number_of_images>  
