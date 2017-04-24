@@ -18,7 +18,12 @@ namespace RSHMUS001{
   }
 
   VolImage::~VolImage(){
-
+      for (int i = 0; i < slices.size(); i++){
+          for (int j = 0; j < height; j++){
+              delete [] slices[i][j];
+          }
+          delete slices[i];
+      }
   }
 
   bool VolImage::readImages(string baseName){
@@ -50,7 +55,7 @@ namespace RSHMUS001{
           width = data_vec[0];
           height = data_vec[1];
           noOfImages = data_vec[2];
-          cout << width << " " << height << " " << noOfImages << endl;
+          //cout << width << " " << height << " " << noOfImages << endl;
       }
       dataFile.close();
 
@@ -70,7 +75,6 @@ namespace RSHMUS001{
           for(int j=0; j<height; j++){
               slice[j] = new unsigned char[width]; //columns
               raw.read((char*)slice[j], width);
-              cout << *slice[j];
 
           }
           raw.close();
@@ -81,8 +85,8 @@ namespace RSHMUS001{
   }
 
   void VolImage::diffmap (int sliceI, int sliceJ, string output_prefix){
-      string diff_map = output_prefix + ".raw";
-      ofstream of(diff_map.c_str(), ios::binary);
+      string output = output_prefix + ".raw";
+      ofstream of(output.c_str(), ios::binary);
 
       //array to hold the diff maps
       unsigned char** temp_arr = new unsigned char* [height];
@@ -96,38 +100,49 @@ namespace RSHMUS001{
       }
 
       of.close();
+      generateHeader (width, height, 1, output_prefix);
+
   }
   void VolImage::extract (int sliceId, string output_prefix){
-      string extract = output_prefix + ".raw";
-      ofstream of(extract.c_str(), ios::binary);
+      string output = output_prefix + ".raw";
+      ofstream of(output.c_str(), ios::binary);
 
       for(int r = 0; r < height; r++){
           of.write((char*)slices[sliceId][r], width);
       }
 
       of.close();
+      generateHeader (width, height, 1, output_prefix);
   }
 
-  void VolImage::sliceThrough (int rowId, output_prefix){
+  void VolImage::sliceThrough (int rowId, string output_prefix){
       string output = output_prefix + ".raw";
       ofstream of(output.c_str(), ios::binary);
 
-      while (!of.eof()){
-        for (int i = 0; i < slices.size(); i++){
-            of.write ((char*)slices[i][rowId])
-        }
+      for (int i = 0; i < slices.size(); i++){
+          of.write((char*)slices[i][rowId], width);
       }
-      output.close();
+
+      of.close();
+      generateHeader(width, slices.size(), 1, output_prefix);
   }
 
   int VolImage::volImageSize(void){
 
-      //rows * pointers to each element in the row
-      return height * slices.size() * (sizeof(unsigned char **) + width);
-
+      //(no. of elements * charSize) + (rows * pointerSize) + (double pointer)
+      return (width * height * slices.size() * sizeof(char)) + (height * slices.size() * sizeof(unsigned char*)) + (slices.size() * sizeof(unsigned char*));
   }
 
   int VolImage::volImageNum(void){
       return slices.size();
   }
+
+
+  void VolImage::generateHeader(int w, int h, int n, string output_prefix) {
+      string filename = output_prefix + ".data";
+      ofstream of(filename.c_str(), ios::binary);
+      of << w << " " << h << " " << n;
+      of.close();
+  }
+
 }
